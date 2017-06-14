@@ -16,9 +16,9 @@ sudo yum install git -y
 
 ```
 cd ~
-wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-linux-x64.rpm?AuthParam=1497421784_8f51c8cfc0e264213d702755e7ed7e7f"
+wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "打开 http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html 找地址"
 
-mv jdk-8u131-linux-x64.rpm\?AuthParam\=1497421784_8f51c8cfc0e264213d702755e7ed7e7f jdk-8u131-linux-x64.rpm
+mv 文件 jdk-8u131-linux-x64.rpm
 sudo yum localinstall jdk-8u131-linux-x64.rpm -y
 rm jdk-8u131-linux-x64.rpm
 ```
@@ -57,7 +57,7 @@ make
 make install
 
 # 如果之前已经安装
-mv /usr/bin/openssl /root/
+rm /usr/bin/openssl
 ln -s /usr/local/ssl/bin/openssl /usr/bin/openssl
 ```
 
@@ -65,13 +65,36 @@ ln -s /usr/local/ssl/bin/openssl /usr/bin/openssl
 
 ```
 cd nginx-${NGINX_VERSION}
-./configure --add-module=$HOME/ngx_pagespeed-${NPS_VERSION}-beta --user=nobody --group=nobody --pid-path=/var/run/nginx.pid ${PS_NGX_EXTRA_FLAGS} --with-http_ssl_module --with-http_v2_module
+./configure --add-module=$HOME/ngx_pagespeed-${NPS_VERSION}-beta --user=nobody --group=nobody --pid-path=/var/run/nginx.pid ${PS_NGX_EXTRA_FLAGS} --with-http_ssl_module --with-http_v2_module --with-openssl=/usr/local/ssl/
 sudo make
 sudo make install
 
 sudo ln -s /usr/local/nginx/conf/ /etc/nginx
 sudo ln -s /usr/local/nginx/sbin/nginx /usr/sbin/nginx
 ```
+编译出现错误，打开 nginx 源文件下的 `auto/lib/openssl/conf` 文件
+
+找到这么一段代码：
+
+```
+CORE_INCS="$CORE_INCS $OPENSSL/.openssl/include"
+CORE_DEPS="$CORE_DEPS $OPENSSL/.openssl/include/openssl/ssl.h"
+CORE_LIBS="$CORE_LIBS $OPENSSL/.openssl/lib/libssl.a"
+CORE_LIBS="$CORE_LIBS $OPENSSL/.openssl/lib/libcrypto.a"
+CORE_LIBS="$CORE_LIBS $NGX_LIBDL"
+```
+
+修改成以下代码：
+
+```
+CORE_INCS="$CORE_INCS $OPENSSL/include"
+CORE_DEPS="$CORE_DEPS $OPENSSL/include/openssl/ssl.h"
+CORE_LIBS="$CORE_LIBS $OPENSSL/lib/libssl.a"
+CORE_LIBS="$CORE_LIBS $OPENSSL/lib/libcrypto.a"
+CORE_LIBS="$CORE_LIBS $NGX_LIBDL"
+```
+
+然后再进行 nginx 的编译安装即可。
 
 接着创建 nginx 执行脚本，
 
