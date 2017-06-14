@@ -44,9 +44,26 @@ psol_url=https://dl.google.com/dl/page-speed/psol/${NPS_VERSION}.tar.gz
 wget ${psol_url}
 tar -xzvf $(basename ${psol_url})
 cd ..
+```
+安装 openssl
 
-cd ~
-sudo yum install openssl-devel -y
+```
+cd /usr/src
+wget https://www.openssl.org/source/openssl-1.0.2-latest.tar.gz
+tar -zxf openssl-1.0.2-latest.tar.gz
+cd openssl-1.0.2l
+./config
+make
+make install
+
+# 如果之前已经安装
+mv /usr/bin/openssl /root/
+ln -s /usr/local/ssl/bin/openssl /usr/bin/openssl
+```
+
+接着编译 nginx
+
+```
 cd nginx-${NGINX_VERSION}
 ./configure --add-module=$HOME/ngx_pagespeed-${NPS_VERSION}-beta --user=nobody --group=nobody --pid-path=/var/run/nginx.pid ${PS_NGX_EXTRA_FLAGS} --with-http_ssl_module --with-http_v2_module
 sudo make
